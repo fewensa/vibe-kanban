@@ -1,5 +1,6 @@
 // Import all necessary types from shared types
 
+import { useAuthStore } from '@/stores/authStore';
 import {
   ApprovalStatus,
   ApiResponse,
@@ -120,6 +121,12 @@ const makeRequest = async (url: string, options: RequestInit = {}) => {
   const headers = new Headers(options.headers ?? {});
   if (!headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
+  }
+
+  // Add authentication token if available
+  const token = useAuthStore.getState().token;
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   return fetch(url, {

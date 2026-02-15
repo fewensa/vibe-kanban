@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/api/auth';
+import { useTheme } from '@/components/ThemeProvider';
 import { PrimaryButton } from '@/components/ui-new/primitives/PrimaryButton';
 import { LockKeyIcon, EnvelopeIcon } from '@phosphor-icons/react';
+import { getActualTheme } from '@/utils/theme';
 
 export function Login() {
   const [email, setEmail] = useState('');
@@ -11,7 +13,13 @@ export function Login() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const { setAuth } = useAuthStore();
+
+  const logoSrc =
+    getActualTheme(theme) === 'dark'
+      ? '/vibe-kanban-logo-dark.svg'
+      : '/vibe-kanban-logo.svg';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +43,13 @@ export function Login() {
         <div className="bg-panel rounded-lg shadow-lg p-8 border border-border">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-normal mb-2">
-              Vibe Kanban
-            </h1>
+            <div className="flex justify-center mb-4">
+              <img
+                src={logoSrc}
+                alt="Vibe Kanban"
+                className="h-8 w-auto"
+              />
+            </div>
             <p className="text-muted">
               Sign in to your account
             </p>
