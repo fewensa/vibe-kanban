@@ -248,6 +248,10 @@ export type EntityReport = { total: number, migrated: number, failed: number, sk
 
 export type EntityError = { local_id: string, error: string, };
 
+// OAuth CurrentUserResponse (from routes/oauth.rs)
+export type CurrentUserResponse = { user_id: string, };
+
+
 export type RegisterRepoRequest = { path: string, display_name: string | null, };
 
 export type InitRepoRequest = { parent_path: string, folder_name: string, };
@@ -255,6 +259,20 @@ export type InitRepoRequest = { parent_path: string, folder_name: string, };
 export type TagSearchParams = { search: string | null, };
 
 export type TokenResponse = { access_token: string, expires_at: string | null, };
+
+export type LocalUser = { id: string, email: string, username: string | null, created_at: string, updated_at: string, };
+
+export type AuthSession = { id: string, user_id: string, expires_at: string, last_used_at: string, created_at: string, };
+
+export type LoginRequest = { email: string, password: string, };
+
+export type SetupRequest = { email: string, password: string, username: string | null, };
+
+export type LoginResponse = { user: LocalUser, session_token: string, expires_at: string, };
+
+export type AuthStatusResponse = { setup_required: boolean, authenticated: boolean, };
+
+export type LocalCurrentUserResponse = { user: LocalUser, };
 
 export type UserSystemInfo = { config: Config, analytics_user_id: string, login_status: LoginStatus, environment: Environment, 
 /**
@@ -275,8 +293,6 @@ export type CheckEditorAvailabilityQuery = { editor_type: EditorType, };
 export type CheckEditorAvailabilityResponse = { available: boolean, };
 
 export type CheckAgentAvailabilityQuery = { executor: BaseCodingAgent, };
-
-export type CurrentUserResponse = { user_id: string, };
 
 export type CreateFollowUpAttempt = { prompt: string, executor_profile_id: ExecutorProfileId, retry_process_id: string | null, force_when_dirty: boolean | null, perform_git_reset: boolean | null, };
 

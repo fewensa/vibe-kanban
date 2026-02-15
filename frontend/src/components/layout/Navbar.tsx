@@ -40,6 +40,7 @@ import {
 import { OAuthDialog } from '@/components/dialogs/global/OAuthDialog';
 import { useUserSystem } from '@/components/ConfigProvider';
 import { oauthApi } from '@/lib/api';
+import { UserMenu } from '@/components/UserMenu';
 
 const INTERNAL_NAV = [
   { label: 'Projects', icon: FolderOpen, to: '/local-projects' },
@@ -263,6 +264,8 @@ export function Navbar() {
                   <Settings className="h-4 w-4" />
                 </Link>
               </Button>
+
+              <UserMenu />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

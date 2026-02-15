@@ -57,6 +57,11 @@ import { LandingPage } from '@/pages/ui-new/LandingPage';
 import { OnboardingSignInPage } from '@/pages/ui-new/OnboardingSignInPage';
 import { RootRedirectPage } from '@/pages/ui-new/RootRedirectPage';
 
+// Auth pages and context
+import { Login } from '@/pages/Login';
+import { Setup } from '@/pages/Setup';
+import { AuthProvider } from '@/contexts/AuthContext';
+
 const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
 function AppContent() {
@@ -125,6 +130,10 @@ function AppContent() {
       <ThemeProvider initialTheme={config?.theme || ThemeMode.SYSTEM}>
         <SearchProvider>
           <SentryRoutes>
+            {/* Auth Routes - No authentication required */}
+            <Route path="/auth/login" element={<NewDesignScope><Login /></NewDesignScope>} />
+            <Route path="/auth/setup" element={<NewDesignScope><Setup /></NewDesignScope>} />
+
             <Route
               path="/"
               element={
@@ -269,22 +278,24 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <UserSystemProvider>
-        <ClickedElementsProvider>
-          <ProjectProvider>
-            <HotkeysProvider
-              initiallyActiveScopes={[
-                'global',
-                'workspace',
-                'kanban',
-                'projects',
-              ]}
-            >
-              <AppContent />
-            </HotkeysProvider>
-          </ProjectProvider>
-        </ClickedElementsProvider>
-      </UserSystemProvider>
+      <AuthProvider>
+        <UserSystemProvider>
+          <ClickedElementsProvider>
+            <ProjectProvider>
+              <HotkeysProvider
+                initiallyActiveScopes={[
+                  'global',
+                  'workspace',
+                  'kanban',
+                  'projects',
+                ]}
+              >
+                <AppContent />
+              </HotkeysProvider>
+            </ProjectProvider>
+          </ClickedElementsProvider>
+        </UserSystemProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

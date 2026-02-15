@@ -9,6 +9,7 @@ interface PrimaryButtonProps {
   disabled?: boolean;
   children?: React.ReactNode;
   className?: string;
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export function PrimaryButton({
@@ -19,6 +20,7 @@ export function PrimaryButton({
   disabled,
   children,
   className,
+  type = 'button',
 }: PrimaryButtonProps) {
   const variantStyles = disabled
     ? 'cursor-not-allowed bg-panel'
@@ -30,6 +32,7 @@ export function PrimaryButton({
 
   return (
     <button
+      type={type}
       className={cn(
         'rounded-sm px-base py-half text-cta h-cta flex gap-half items-center',
         variantStyles,

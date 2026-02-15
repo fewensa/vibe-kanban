@@ -1,5 +1,6 @@
 use axum::{
     Router,
+    middleware::from_fn_with_state,
     routing::{IntoMakeService, get},
 };
 use tower_http::validate_request::ValidateRequestHeaderLayer;
@@ -7,6 +8,7 @@ use tower_http::validate_request::ValidateRequestHeaderLayer;
 use crate::{DeploymentImpl, middleware};
 
 pub mod approvals;
+pub mod auth;
 pub mod config;
 pub mod containers;
 pub mod filesystem;
@@ -31,9 +33,11 @@ pub mod tasks;
 pub mod terminal;
 
 pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
-    // Create routers with different middleware layers
-    let base_routes = Router::new()
-        .route("/health", get(health::health_check))
+    // Public auth routes (no auth middleware)
+    let public_auth_routes = auth::public_router();
+
+    // Protected routes (require authentication)
+    let protected_routes = Router::new()
         .merge(config::router())
         .merge(containers::router(&deployment))
         .merge(projects::router(&deployment))
@@ -52,8 +56,16 @@ pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
         .merge(migration::router())
         .merge(sessions::router(&deployment))
         .merge(terminal::router())
+        .merge(auth::protected_router())  // Add protected auth routes
         .nest("/remote", remote::router())
         .nest("/images", images::routes())
+        .layer(from_fn_with_state(deployment.clone(), middleware::require_auth));
+
+    // Combine all API routes
+    let base_routes = Router::new()
+        .route("/health", get(health::health_check))
+        .merge(public_auth_routes)
+        .merge(protected_routes)
         .layer(ValidateRequestHeaderLayer::custom(
             middleware::validate_origin,
         ))
