@@ -3,7 +3,13 @@ import type {
   LoginRequest, 
   LoginResponse, 
   SetupRequest,
-  LocalCurrentUserResponse 
+  LocalCurrentUserResponse,
+  ChangePasswordRequest,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UserListResponse,
+  UserResponse,
+  LocalUser,
 } from 'shared/types';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -91,6 +97,63 @@ export const authApi = {
     });
     await handleResponse(res);
     return res.json();
+  },
+
+  async changePassword(data: ChangePasswordRequest): Promise<void> {
+    const res = await fetch(`${API_BASE}/auth/local/change-password`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    await handleResponse(res);
+  },
+
+  async listUsers(): Promise<LocalUser[]> {
+    const res = await fetch(`${API_BASE}/auth/users`, {
+      headers: getAuthHeaders(),
+    });
+    await handleResponse(res);
+    const data: UserListResponse = await res.json();
+    return data.users;
+  },
+
+  async createUser(data: CreateUserRequest): Promise<LocalUser> {
+    const res = await fetch(`${API_BASE}/auth/users`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    await handleResponse(res);
+    const response: UserResponse = await res.json();
+    return response.user;
+  },
+
+  async getUser(userId: string): Promise<LocalUser> {
+    const res = await fetch(`${API_BASE}/auth/users/${userId}`, {
+      headers: getAuthHeaders(),
+    });
+    await handleResponse(res);
+    const data: UserResponse = await res.json();
+    return data.user;
+  },
+
+  async updateUser(userId: string, data: UpdateUserRequest): Promise<LocalUser> {
+    const res = await fetch(`${API_BASE}/auth/users/${userId}`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    await handleResponse(res);
+    const response: UserResponse = await res.json();
+    return response.user;
+  },
+
+  async deleteUser(userId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/auth/users/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    await handleResponse(res);
   },
 };
 

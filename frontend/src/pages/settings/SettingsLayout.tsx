@@ -8,6 +8,8 @@ import {
   FolderOpen,
   Building2,
   GitBranch,
+  User,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,6 +23,14 @@ const settingsNavigation = [
   {
     path: 'general',
     icon: Settings,
+  },
+  {
+    path: 'account',
+    icon: User,
+  },
+  {
+    path: 'users',
+    icon: Users,
   },
   {
     path: 'projects',

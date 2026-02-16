@@ -28,6 +28,8 @@ pub enum AuthError {
     SessionRevoked,
     #[error("Email already exists")]
     EmailExists,
+    #[error("Cannot delete yourself")]
+    CannotDeleteSelf,
     #[error("Database error: {0}")]
     Database(#[from] sqlx::Error),
     #[error("Password hashing error: {0}")]
@@ -243,7 +245,7 @@ impl LocalAuthService {
         })
     }
 
-    async fn get_user_by_id(&self, id: &str) -> Result<LocalUser, AuthError> {
+    pub async fn get_user_by_id(&self, id: &str) -> Result<LocalUser, AuthError> {
         let row = sqlx::query(
             "SELECT id, email, username, created_at, updated_at FROM users WHERE id = ?1"
         )
@@ -342,6 +344,132 @@ impl LocalAuthService {
         if count > 0 {
             warn!("Revoked {} expired/inactive sessions", count);
         }
+
+        Ok(())
+    }
+
+    /// Change user password
+    pub async fn change_password(
+        &self,
+        user_id: &str,
+        current_password: &str,
+        new_password: &str,
+    ) -> Result<(), AuthError> {
+        // Fetch current password hash
+        let row = sqlx::query("SELECT password_hash FROM users WHERE id = ?1")
+            .bind(user_id)
+            .fetch_optional(&self.pool)
+            .await?
+            .ok_or(AuthError::UserNotFound)?;
+
+        let password_hash: String = row.try_get("password_hash")?;
+
+        // Verify current password
+        self.verify_password(current_password, &password_hash)?;
+
+        // Hash new password
+        let new_password_hash = self.hash_password(new_password)?;
+
+        // Update password
+        sqlx::query("UPDATE users SET password_hash = ?1, updated_at = ?2 WHERE id = ?3")
+            .bind(&new_password_hash)
+            .bind(Utc::now().to_rfc3339())
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    /// Get all users (admin only)
+    pub async fn list_users(&self) -> Result<Vec<LocalUser>, AuthError> {
+        let rows = sqlx::query(
+            "SELECT id, email, username, created_at, updated_at FROM users ORDER BY created_at ASC"
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let mut users = Vec::new();
+        for row in rows {
+            users.push(LocalUser {
+                id: row.try_get("id")?,
+                email: row.try_get("email")?,
+                username: row.try_get("username")?,
+                created_at: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("created_at")?)
+                    .map_err(|e| AuthError::Database(sqlx::Error::Decode(Box::new(e))))?
+                    .with_timezone(&Utc),
+                updated_at: DateTime::parse_from_rfc3339(&row.try_get::<String, _>("updated_at")?)
+                    .map_err(|e| AuthError::Database(sqlx::Error::Decode(Box::new(e))))?
+                    .with_timezone(&Utc),
+            });
+        }
+
+        Ok(users)
+    }
+
+    /// Create a new user (admin only)
+    pub async fn create_user(
+        &self,
+        email: &str,
+        password: &str,
+        username: Option<String>,
+    ) -> Result<LocalUser, AuthError> {
+        let user_id = uuid::Uuid::new_v4().to_string();
+        let password_hash = self.hash_password(password)?;
+
+        sqlx::query(
+            "INSERT INTO users (id, email, password_hash, username) VALUES (?1, ?2, ?3, ?4)"
+        )
+        .bind(&user_id)
+        .bind(email)
+        .bind(&password_hash)
+        .bind(&username)
+        .execute(&self.pool)
+        .await
+        .map_err(|e| {
+            if e.to_string().contains("UNIQUE constraint failed") {
+                AuthError::EmailExists
+            } else {
+                AuthError::Database(e)
+            }
+        })?;
+
+        self.get_user_by_id(&user_id).await
+    }
+
+    /// Update user information (admin only)
+    pub async fn update_user(
+        &self,
+        user_id: &str,
+        username: Option<String>,
+    ) -> Result<LocalUser, AuthError> {
+        sqlx::query("UPDATE users SET username = ?1, updated_at = ?2 WHERE id = ?3")
+            .bind(&username)
+            .bind(Utc::now().to_rfc3339())
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+        self.get_user_by_id(user_id).await
+    }
+
+    /// Delete a user (admin only)
+    pub async fn delete_user(&self, user_id: &str) -> Result<(), AuthError> {
+        // Check if user exists
+        let _ = self.get_user_by_id(user_id).await?;
+
+        // Revoke all user sessions
+        sqlx::query("UPDATE auth_sessions SET revoked_at = ?1 WHERE user_id = ?2 AND revoked_at IS NULL")
+            .bind(Utc::now().to_rfc3339())
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
+
+        // Delete user
+        sqlx::query("DELETE FROM users WHERE id = ?1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }

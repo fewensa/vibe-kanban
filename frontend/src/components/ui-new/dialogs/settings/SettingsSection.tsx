@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { XIcon } from '@phosphor-icons/react';
 
 import { GeneralSettingsSectionContent } from './GeneralSettingsSection';
+import { AccountSettingsSection } from './AccountSettingsSection';
+import { UsersSettingsSection } from './UsersSettingsSection';
 import { ReposSettingsSectionContent } from './ReposSettingsSection';
 import { OrganizationsSettingsSectionContent } from './OrganizationsSettingsSection';
 import { RemoteProjectsSettingsSectionContent } from './RemoteProjectsSettingsSection';
@@ -10,6 +12,8 @@ import { McpSettingsSectionContent } from './McpSettingsSection';
 
 export type SettingsSectionType =
   | 'general'
+  | 'account'
+  | 'users'
   | 'repos'
   | 'organizations'
   | 'remote-projects'
@@ -19,6 +23,8 @@ export type SettingsSectionType =
 // Section-specific initial state types
 export type SettingsSectionInitialState = {
   general: undefined;
+  account: undefined;
+  users: undefined;
   repos: { repoId?: string } | undefined;
   organizations: { organizationId?: string } | undefined;
   'remote-projects':
@@ -45,6 +51,10 @@ export function SettingsSection({
     switch (type) {
       case 'general':
         return <GeneralSettingsSectionContent />;
+      case 'account':
+        return <AccountSettingsSection />;
+      case 'users':
+        return <UsersSettingsSection />;
       case 'repos':
         return (
           <ReposSettingsSectionContent

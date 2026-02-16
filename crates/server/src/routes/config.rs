@@ -37,9 +37,15 @@ use uuid::Uuid;
 
 use crate::{DeploymentImpl, error::ApiError};
 
-pub fn router() -> Router<DeploymentImpl> {
+// Public routes (no authentication required)
+pub fn public_router() -> Router<DeploymentImpl> {
     Router::new()
         .route("/info", get(get_user_system_info))
+}
+
+// Protected routes (authentication required)
+pub fn router() -> Router<DeploymentImpl> {
+    Router::new()
         .route("/config", put(update_config))
         .route("/sounds/{sound}", get(get_sound))
         .route("/mcp-config", get(get_mcp_servers).post(update_mcp_servers))

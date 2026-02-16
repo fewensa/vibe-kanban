@@ -21,6 +21,8 @@ import { useUiPreferencesScratch } from '@/hooks/useUiPreferencesScratch';
 import {
   AgentSettings,
   GeneralSettings,
+  AccountSettings,
+  UsersSettings,
   McpSettings,
   OrganizationSettings,
   ProjectSettings,
@@ -187,6 +189,8 @@ function AppContent() {
               <Route path="/settings/*" element={<SettingsLayout />}>
                 <Route index element={<Navigate to="general" replace />} />
                 <Route path="general" element={<GeneralSettings />} />
+                <Route path="account" element={<AccountSettings />} />
+                <Route path="users" element={<UsersSettings />} />
                 <Route path="projects" element={<ProjectSettings />} />
                 <Route path="repos" element={<ReposSettings />} />
                 <Route

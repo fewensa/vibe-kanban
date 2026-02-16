@@ -64,6 +64,7 @@ pub fn router(deployment: DeploymentImpl) -> IntoMakeService<Router> {
     // Combine all API routes
     let base_routes = Router::new()
         .route("/health", get(health::health_check))
+        .merge(config::public_router())  // Add public config routes (e.g., /info)
         .merge(public_auth_routes)
         .merge(protected_routes)
         .layer(ValidateRequestHeaderLayer::custom(

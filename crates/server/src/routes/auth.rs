@@ -2,7 +2,7 @@ use axum::{
     Extension,
     Json,
     Router,
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::{get, post},
@@ -12,7 +12,9 @@ use tracing::error;
 use deployment::Deployment;
 
 use api_types::{
-    AuthStatusResponse, LocalCurrentUserResponse, LoginRequest, SetupRequest,
+    AuthStatusResponse, ChangePasswordRequest, CreateUserRequest,
+    LocalCurrentUserResponse, LoginRequest, SetupRequest, UpdateUserRequest,
+    UserListResponse, UserResponse,
 };
 use services::services::local_auth::{AuthError, LocalAuthService};
 
@@ -29,6 +31,9 @@ pub fn protected_router() -> Router<DeploymentImpl> {
     Router::new()
         .route("/auth/local/logout", post(logout))
         .route("/auth/local/me", get(current_user))
+        .route("/auth/local/change-password", post(change_password))
+        .route("/auth/users", get(list_users).post(create_user))
+        .route("/auth/users/{id}", get(get_user).patch(update_user).delete(delete_user))
 }
 
 async fn auth_status(
@@ -93,6 +98,91 @@ async fn current_user(
     }))
 }
 
+async fn change_password(
+    State(deployment): State<DeploymentImpl>,
+    Extension(auth_ctx): Extension<AuthContext>,
+    Json(req): Json<ChangePasswordRequest>,
+) -> Result<StatusCode, AppError> {
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    auth_service
+        .change_password(&auth_ctx.user.id, &req.current_password, &req.new_password)
+        .await?;
+
+    Ok(StatusCode::OK)
+}
+
+async fn list_users(
+    State(deployment): State<DeploymentImpl>,
+    Extension(_auth_ctx): Extension<AuthContext>,
+) -> Result<Json<UserListResponse>, AppError> {
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    let users = auth_service.list_users().await?;
+
+    Ok(Json(UserListResponse { users }))
+}
+
+async fn create_user(
+    State(deployment): State<DeploymentImpl>,
+    Extension(_auth_ctx): Extension<AuthContext>,
+    Json(req): Json<CreateUserRequest>,
+) -> Result<(StatusCode, Json<UserResponse>), AppError> {
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    let user = auth_service
+        .create_user(&req.email, &req.password, req.username)
+        .await?;
+
+    Ok((StatusCode::CREATED, Json(UserResponse { user })))
+}
+
+async fn get_user(
+    State(deployment): State<DeploymentImpl>,
+    Extension(_auth_ctx): Extension<AuthContext>,
+    Path(user_id): Path<String>,
+) -> Result<Json<UserResponse>, AppError> {
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    let user = auth_service.get_user_by_id(&user_id).await.map_err(|_| {
+        AppError(anyhow::anyhow!(AuthError::UserNotFound))
+    })?;
+
+    Ok(Json(UserResponse { user }))
+}
+
+async fn update_user(
+    State(deployment): State<DeploymentImpl>,
+    Extension(_auth_ctx): Extension<AuthContext>,
+    Path(user_id): Path<String>,
+    Json(req): Json<UpdateUserRequest>,
+) -> Result<Json<UserResponse>, AppError> {
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    let user = auth_service
+        .update_user(&user_id, req.username)
+        .await?;
+
+    Ok(Json(UserResponse { user }))
+}
+
+async fn delete_user(
+    State(deployment): State<DeploymentImpl>,
+    Extension(auth_ctx): Extension<AuthContext>,
+    Path(user_id): Path<String>,
+) -> Result<StatusCode, AppError> {
+    // Prevent user from deleting themselves
+    if auth_ctx.user.id == user_id {
+        return Err(AppError::from(AuthError::CannotDeleteSelf));
+    }
+
+    let auth_service = LocalAuthService::new(deployment.db().pool.clone());
+    
+    auth_service.delete_user(&user_id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 // Error handling
 struct AppError(anyhow::Error);
 
@@ -105,6 +195,7 @@ impl IntoResponse for AppError {
             Some(AuthError::SessionExpired) => (StatusCode::UNAUTHORIZED, "Session expired"),
             Some(AuthError::SessionRevoked) => (StatusCode::UNAUTHORIZED, "Session revoked"),
             Some(AuthError::EmailExists) => (StatusCode::CONFLICT, "Email already exists"),
+            Some(AuthError::CannotDeleteSelf) => (StatusCode::FORBIDDEN, "Cannot delete yourself"),
             Some(AuthError::SetupCompleted) => (StatusCode::CONFLICT, "Setup already completed"),
             Some(AuthError::Database(_)) => (StatusCode::INTERNAL_SERVER_ERROR, "Database error"),
             Some(AuthError::PasswordHash(_)) => (StatusCode::INTERNAL_SERVER_ERROR, "Internal error"),

@@ -4,6 +4,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { authApi } from '@/api/auth';
 import { PrimaryButton } from '@/components/ui-new/primitives/PrimaryButton';
 import { LockKeyIcon, EnvelopeIcon, UserIcon } from '@phosphor-icons/react';
+import { useTheme } from '@/components/ThemeProvider';
+import { getActualTheme } from '@/utils/theme';
 
 export function Setup() {
   const [email, setEmail] = useState('');
@@ -14,6 +16,8 @@ export function Setup() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
+  const { theme } = useTheme();
+  const actualTheme = getActualTheme(theme);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +58,11 @@ export function Setup() {
         <div className="bg-panel rounded-lg shadow-lg p-8 border border-border">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-normal mb-2">
-              Welcome to Vibe Kanban
-            </h1>
+            <img
+              src={actualTheme === 'dark' ? '/vibe-kanban-logo-dark.svg' : '/vibe-kanban-logo.svg'}
+              alt="Vibe Kanban"
+              className="h-8 mx-auto mb-4"
+            />
             <p className="text-muted">
               Create your admin account
             </p>

@@ -10,6 +10,8 @@ import {
   PlugIcon,
   CaretLeftIcon,
   XIcon,
+  UserIcon,
+  UsersThreeIcon,
 } from '@phosphor-icons/react';
 import type { Icon } from '@phosphor-icons/react';
 import NiceModal, { useModal } from '@ebay/nice-modal-react';
@@ -32,6 +34,8 @@ const SETTINGS_SECTIONS: {
   icon: Icon;
 }[] = [
   { id: 'general', icon: GearIcon },
+  { id: 'account', icon: UserIcon },
+  { id: 'users', icon: UsersThreeIcon },
   { id: 'repos', icon: GitBranchIcon },
   { id: 'organizations', icon: BuildingsIcon },
   { id: 'remote-projects', icon: CloudIcon },

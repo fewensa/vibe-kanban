@@ -57,3 +57,36 @@ pub struct AuthStatusResponse {
 pub struct LocalCurrentUserResponse {
     pub user: LocalUser,
 }
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+pub struct ChangePasswordRequest {
+    pub current_password: String,
+    pub new_password: String,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+pub struct CreateUserRequest {
+    pub email: String,
+    pub password: String,
+    pub username: Option<String>,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+pub struct UpdateUserRequest {
+    pub username: Option<String>,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export)]
+pub struct UserListResponse {
+    pub users: Vec<LocalUser>,
+}
+
+#[derive(Debug, Serialize, TS)]
+#[ts(export)]
+pub struct UserResponse {
+    pub user: LocalUser,
+}

@@ -1,5 +1,7 @@
 export { SettingsLayout } from './SettingsLayout';
 export { GeneralSettings } from './GeneralSettings';
+export { AccountSettings } from './AccountSettings';
+export { UsersSettings } from './UsersSettings';
 export { ProjectSettings } from './ProjectSettings';
 export { ReposSettings } from './ReposSettings';
 export { OrganizationSettings } from './OrganizationSettings';
