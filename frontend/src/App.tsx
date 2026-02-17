@@ -28,6 +28,7 @@ import {
   SettingsLayout,
 } from '@/pages/settings/';
 import { UserSystemProvider, useUserSystem } from '@/components/ConfigProvider';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { SearchProvider } from '@/contexts/SearchContext';
 
@@ -226,7 +227,11 @@ function AppContent() {
             >
               {/* Workspaces routes */}
               <Route path="/workspaces" element={<WorkspacesLanding />} />
-              <Route path="/workspaces/create" element={<Workspaces />} />
+              <Route path="/workspaces/create" element={
+                <ProtectedRoute>
+                  <Workspaces />
+                </ProtectedRoute>
+              } />
               <Route
                 path="/workspaces/electric-test"
                 element={<ElectricTestPage />}
@@ -249,11 +254,19 @@ function AppContent() {
               />
               <Route
                 path="/projects/:projectId/issues/:issueId/workspaces/create/:draftId"
-                element={<ProjectKanban />}
+                element={
+                  <ProtectedRoute>
+                    <ProjectKanban />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/projects/:projectId/workspaces/create/:draftId"
-                element={<ProjectKanban />}
+                element={
+                  <ProtectedRoute>
+                    <ProjectKanban />
+                  </ProtectedRoute>
+                }
               />
 
               {/* Migration route */}

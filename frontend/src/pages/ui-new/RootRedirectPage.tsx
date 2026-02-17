@@ -7,7 +7,7 @@ import { useOrganizationStore } from '@/stores/useOrganizationStore';
 const DEFAULT_DESTINATION = '/workspaces/create';
 
 export function RootRedirectPage() {
-  const { config, loading, loginStatus } = useUserSystem();
+  const { config, loading, loginStatus, enforceLogin } = useUserSystem();
   const setSelectedOrgId = useOrganizationStore((s) => s.setSelectedOrgId);
   const [destination, setDestination] = useState<string | null>(null);
 
@@ -21,6 +21,12 @@ export function RootRedirectPage() {
 
       if (!config.remote_onboarding_acknowledged) {
         setDestination('/onboarding');
+        return;
+      }
+
+      // If login is enforced and user is not logged in, redirect to onboarding/sign-in
+      if (enforceLogin && loginStatus?.status !== 'loggedin') {
+        setDestination('/onboarding/sign-in');
         return;
       }
 
@@ -41,7 +47,7 @@ export function RootRedirectPage() {
     return () => {
       cancelled = true;
     };
-  }, [config, loading, loginStatus?.status, setSelectedOrgId]);
+  }, [config, loading, loginStatus?.status, enforceLogin, setSelectedOrgId]);
 
   if (loading || !config || !destination) {
     return (
