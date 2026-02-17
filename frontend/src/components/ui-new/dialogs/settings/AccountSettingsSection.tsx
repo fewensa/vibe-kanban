@@ -60,6 +60,18 @@ export function AccountSettingsSection() {
 
   return (
     <div className="p-4 space-y-4">
+      {error && (
+        <div className="text-sm text-error bg-error/10 border border-error/20 rounded-sm p-3">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="text-sm text-success bg-success/10 border border-success/20 rounded-sm p-3">
+          Password changed successfully
+        </div>
+      )}
+
       <SettingsCard
         title="Change Password"
         description="Update your account password"
@@ -72,7 +84,7 @@ export function AccountSettingsSection() {
             <SettingsInput
               type="password"
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              onChange={setCurrentPassword}
               placeholder="Current password"
             />
           </SettingsField>
@@ -84,7 +96,7 @@ export function AccountSettingsSection() {
             <SettingsInput
               type="password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={setNewPassword}
               placeholder="New password"
             />
           </SettingsField>
@@ -96,7 +108,7 @@ export function AccountSettingsSection() {
             <SettingsInput
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={setConfirmPassword}
               placeholder="Confirm new password"
             />
           </SettingsField>
@@ -104,10 +116,9 @@ export function AccountSettingsSection() {
       </SettingsCard>
 
       <SettingsSaveBar
-        dirty={isDirty}
+        show={isDirty}
         saving={saving}
-        error={error}
-        success={success}
+        saveDisabled={false}
         onSave={handleSubmit}
         onDiscard={() => {
           setCurrentPassword('');

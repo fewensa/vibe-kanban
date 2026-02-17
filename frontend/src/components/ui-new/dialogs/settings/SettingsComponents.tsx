@@ -280,12 +280,14 @@ export function SettingsSelect<T extends string>({
 
 // SettingsInput - A text input field
 export function SettingsInput({
+  type = 'text',
   value,
   onChange,
   placeholder,
   error,
   disabled,
 }: {
+  type?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -294,7 +296,7 @@ export function SettingsInput({
 }) {
   return (
     <input
-      type="text"
+      type={type}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}

@@ -130,8 +130,8 @@ export function UsersSettingsSection() {
               <SettingsInput
                 type="email"
                 value={newUser.email}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, email: e.target.value })
+                onChange={(value) =>
+                  setNewUser({ ...newUser, email: value })
                 }
                 placeholder="john@example.com"
               />
@@ -140,8 +140,8 @@ export function UsersSettingsSection() {
             <SettingsField label="Username" description="Unique username (optional)">
               <SettingsInput
                 value={newUser.username}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, username: e.target.value })
+                onChange={(value) =>
+                  setNewUser({ ...newUser, username: value })
                 }
                 placeholder="john_doe"
               />
@@ -154,8 +154,8 @@ export function UsersSettingsSection() {
               <SettingsInput
                 type="password"
                 value={newUser.password}
-                onChange={(e) =>
-                  setNewUser({ ...newUser, password: e.target.value })
+                onChange={(value) =>
+                  setNewUser({ ...newUser, password: value })
                 }
                 placeholder="••••••••"
               />
