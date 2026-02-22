@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 /**
- * ProtectedRoute component that redirects to sign-in page
+ * ProtectedRoute component that redirects to onboarding page
  * if enforce_login is enabled and user is not logged in.
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
@@ -21,9 +21,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  // If enforce_login is enabled and user is not logged in, redirect to sign-in
+  // If enforce_login is enabled and user is not logged in, redirect to onboarding
   if (enforceLogin && loginStatus?.status !== 'loggedin') {
-    return <Navigate to="/onboarding/sign-in" replace />;
+    return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;

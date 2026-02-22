@@ -24,9 +24,9 @@ export function RootRedirectPage() {
         return;
       }
 
-      // If enforce_login is enabled and user is not logged in, redirect to sign-in
+      // If enforce_login is enabled and user is not logged in, redirect to onboarding
       if (enforceLogin && loginStatus?.status !== 'loggedin') {
-        setDestination('/onboarding/sign-in');
+        setDestination('/onboarding');
         return;
       }
 

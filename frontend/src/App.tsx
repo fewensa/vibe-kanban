@@ -156,9 +156,11 @@ function AppContent() {
             <Route
               path="/local-projects/:projectId/tasks/:taskId/attempts/:attemptId/full"
               element={
-                <LegacyDesignScope>
-                  <FullAttemptLogsPage />
-                </LegacyDesignScope>
+                <ProtectedRoute>
+                  <LegacyDesignScope>
+                    <FullAttemptLogsPage />
+                  </LegacyDesignScope>
+                </ProtectedRoute>
               }
             />
 
@@ -207,11 +209,13 @@ function AppContent() {
             <Route
               path="/workspaces/:workspaceId/vscode"
               element={
-                <VSCodeScope>
-                  <TerminalProvider>
-                    <VSCodeWorkspacePage />
-                  </TerminalProvider>
-                </VSCodeScope>
+                <ProtectedRoute>
+                  <VSCodeScope>
+                    <TerminalProvider>
+                      <VSCodeWorkspacePage />
+                    </TerminalProvider>
+                  </VSCodeScope>
+                </ProtectedRoute>
               }
             />
 
